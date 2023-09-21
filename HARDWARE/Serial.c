@@ -31,16 +31,16 @@ void Serial_Init(void)
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_Init(USART1, &USART_InitStructure);
 	//使用中断的方法读取数据
-	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
-	
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
-	
-	NVIC_InitTypeDef NVIC_InitStructure;
-	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x00;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x01;
-	NVIC_Init(&NVIC_InitStructure);
+//	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
+//	
+//	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+//	
+//	NVIC_InitTypeDef NVIC_InitStructure;
+//	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
+//	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+//	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x00;
+//	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x01;
+//	NVIC_Init(&NVIC_InitStructure);
 	//开启中断		
 	USART_Cmd(USART1, ENABLE);
 }
@@ -119,12 +119,40 @@ uint8_t Serial_GetRxData(void)
 	return Serial_RxData;
 }
 
-void USART1_IRQHandler(void)
+//void USART1_IRQHandler(void)
+//{
+//	if (USART_GetITStatus(USART1, USART_IT_RXNE) == SET)
+//	{
+//		Serial_RxData = USART_ReceiveData(USART1);
+//		Serial_RxFlag = 1;
+//		USART_ClearITPendingBit(USART1, USART_IT_RXNE);
+//	}
+//}
+
+
+
+
+
+char *USART_GetString(char *s)//从串口阻塞等待一个字符串，遇到0x0d或者0x0a结束
 {
-	if (USART_GetITStatus(USART1, USART_IT_RXNE) == SET)
-	{
-		Serial_RxData = USART_ReceiveData(USART1);
-		Serial_RxFlag = 1;
-		USART_ClearITPendingBit(USART1, USART_IT_RXNE);
+	char code;
+	char *str = s;
+	if(USART_GetFlagStatus(USART1,USART_FLAG_RXNE)==RESET){
+	    *s=0;
+	    return NULL;
 	}
+	
+	while(1){
+	    if(USART_GetFlagStatus(USART1,USART_FLAG_RXNE)!=RESET){
+		USART_ClearFlag(USART1,USART_FLAG_RXNE);
+		code=USART_ReceiveData(USART1);
+		if(code == 0x0D||code ==0x0A){
+			*str=0;
+			break;
+		}else{
+			*str++ = code;
+		}
+	    }
+	}
+	return s;
 }
