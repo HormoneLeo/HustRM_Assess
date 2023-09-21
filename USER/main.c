@@ -14,10 +14,13 @@ int main(void)
 	KEY_Init();
 	Serial_Init();
 	
-	
+	printf("Press and hold the key to set the current time of the system\r\n");
+	while(myKey_Value.longPressed == RESET);
+	printf("Send the message like Set_Time:20230921 19:30:21\r\n");
+
 	while (1)
 	{
 	
 	}
 }
-//中断执行函数写在main()里
+
