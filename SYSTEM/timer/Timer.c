@@ -29,8 +29,8 @@ void Timer_Init(void)
 		NVIC_InitTypeDef NVIC_InitStructure;
 		NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
 		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x01;
+		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x01;
 	NVIC_Init(&NVIC_InitStructure);
 	
 	//使能定时器
@@ -40,7 +40,7 @@ void Timer_Init(void)
 
 
 
-//中断执行函数写在main()里
+//中断执行函数写在key.c文件里
 //void TIM2_IRQHandler(void)
 //{
 //	if(TIM_GetITStatus(TIM2, TIM_IT_Update) == SET)
