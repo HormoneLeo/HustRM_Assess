@@ -29,4 +29,9 @@ extern myKey_ValueTypeDef myKey_Value;
 void KEY_Init(void) ;
 void keyValueReset(void);
 
+
+void TIM_CLock_Count(void);
+void TIM_SetClock(uint32_t TIM_ClockStartPoint);
+uint32_t TIM_GetClock(void);
+
 #endif

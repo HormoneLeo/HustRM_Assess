@@ -1,12 +1,12 @@
 #include "stm32f10x.h"                  // Device header
 #include "key.h"
-
+#include "OLED.h"
 
 #define KEY GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_1)
 
-
+static uint32_t TIM_Count_s = 0;
 myKey_ValueTypeDef myKey_Value;
-
+FlagStatus TIM_ClockFlag;
 
 
 void KEY_Init(void)
@@ -68,7 +68,6 @@ void EXTI1_IRQHandler(void)
     EXTI_ClearITPendingBit(EXTI_Line1); //清除 LINE1 上的中断标志位
 }
 
-
 //TIM2触发频率为1KHz,也就是每1ms对按键状态采样一次
 void TIM2_IRQHandler(void)
 {
@@ -124,10 +123,41 @@ void TIM2_IRQHandler(void)
 			myKey_Value.doublePressed_JudgeFlag = RESET;
 			keyValueReset();
 		}
-		
+		if(TIM_ClockFlag != RESET) TIM_CLock_Count();
 	}
 	
 	TIM_ClearITPendingBit(TIM2, TIM_IT_Update);//清除中断标志位
 }
 
 
+
+
+
+
+uint32_t TIM_GetClock(void)
+{
+	return TIM_Count_s;
+}
+
+
+void TIM_SetClock(uint32_t TIM_ClockStartPoint)
+{
+	TIM_Count_s = TIM_ClockStartPoint;
+	TIM_ClockFlag = SET;
+}
+
+void TIM_CLock_Count(void)
+{
+	static uint16_t TIM_Count_ms = 0;
+
+	if(TIM_Count_ms++ >= 1000) 
+	{
+		TIM_Count_ms = 0;
+		if(TIM_Count_s ++ >= 86400)
+			TIM_Count_s = 0;
+			OLED_ShowNum(2, 3, TIM_Count_s / 3600, 2);
+		OLED_ShowNum(2, 6, (TIM_Count_s % 3600) / 60, 2);
+		OLED_ShowNum(2, 9, (TIM_Count_s % 3600) % 60, 2);
+	}
+
+}
