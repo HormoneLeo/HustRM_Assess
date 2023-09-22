@@ -155,7 +155,7 @@ void TIM_CLock_Count(void)
 		TIM_Count_ms = 0;
 		if(TIM_Count_s ++ >= 86400)
 			TIM_Count_s = 0;
-			OLED_ShowNum(2, 3, TIM_Count_s / 3600, 2);
+		OLED_ShowNum(2, 3, TIM_Count_s / 3600, 2);
 		OLED_ShowNum(2, 6, (TIM_Count_s % 3600) / 60, 2);
 		OLED_ShowNum(2, 9, (TIM_Count_s % 3600) % 60, 2);
 	}
