@@ -7,6 +7,13 @@
 #include "Serial.h"
 #include "string.h"
 
+
+enum{
+	searchMode_OnlyName = 0,
+	searchMode_PasswordCheck
+}searchMode;
+
+
 struct loginTime{
 	uint8_t Hour,Min,Sec;
 	uint16_t Year,Month,Day;
@@ -34,6 +41,21 @@ static char cmd_Exit[]="exit";
 
 
 
+void Printf_Loading(uint16_t delay_time)
+{
+	printf("\r\nloading");
+	Delay_ms(delay_time);
+	printf(".");
+	Delay_ms(delay_time);
+	printf(".");
+	Delay_ms(delay_time);
+	printf(".");
+	Delay_ms(delay_time);
+	printf(".");
+	Delay_ms(delay_time);
+	printf(".\r\n\r\n");
+	
+}
 
 //外设模块初始化
 void Project_InitAll()
@@ -53,6 +75,7 @@ void DeviceStart(void)
 {
 	printf("请长按按键打开设备\r\n\r\n");
 	while(myKey_Value.longPressed == RESET);
+	Printf_Loading(200);
 	printf("设备打开成功，请用SETTIME命令设置当前系统时间,格式如下:\r\nSETTIME 19:30:21 2023/09/21\r\n\r\n");
 }
 
@@ -87,42 +110,82 @@ void TimeSet(void)
 	}
 }
 	
-void Print_MainMeun(uint8_t MainMeun_Option)
+
+
+void Printf_MainMeun(uint8_t MainMeun_Option)
 {
-	printf("\r\nloading......\r\n\r\n");
+	Printf_Loading(500);
 	switch(MainMeun_Option){
 		case 0:{
-			printf("error commit!Send the right message again, please.\r\n");
+			printf("*************** error ***************\r\n");
 		}break;
 		case 1:{
-			printf("**************Main Meun*************\r\n");
-			printf("   --------signup:长按按键--------   \r\n");
-			printf("   --------login :单击按键--------   \r\n");
-			printf("   --------lookup:双击按键--------   \r\n");
+			printf("**************Main Meun**************\r\n");
+			printf("*                                   *\r\n");
+			printf("*  --------signup:长按按键--------  *\r\n");
+			printf("*                                   *\r\n");
+			printf("*  --------login :单击按键--------  *\r\n");
+			printf("*                                   *\r\n");
+			printf("*  --------lookup:双击按键--------  *\r\n");
+			printf("*                                   *\r\n");
 			printf("*************************************\r\n");
 		}break;
 		case 2:{
 			printf("*************login Meun**************\r\n");
-			printf("   ------------user:***-----------   \r\n");
-			printf("   --------------exit-------------   \r\n");
+			printf("*                                   *\r\n");
+			printf("*  ------------user:***-----------  *\r\n");
+			printf("*                                   *\r\n");
+			printf("*  --------------exit-------------  *\r\n");
+			printf("*                                   *\r\n");
 			printf("*************************************\r\n");
 		}break;
 		case 3:{
-			printf("*************signup Meun**************\r\n");
-			printf("   ----user:***,password:******----   \r\n");
-			printf("   --------------exit-------------   \r\n");
-			printf("*************************************\r\n");
+			printf("*************lookup Meun**************\r\n");
+			printf("*                                    *\r\n");
+			printf("*  ----user:***,password:******----  *\r\n");
+			printf("*                                    *\r\n");
+			printf("*  --------------exit-------------   *\r\n");
+			printf("*                                    *\r\n");
+			printf("**************************************\r\n");
+			
 		}break;
 		case 4:{
-			printf("*************lookup Meun**************\r\n");
-			printf("   ------------user:***-----------   \r\n");
-			printf("   --------------exit-------------   \r\n");
-			printf("*************************************\r\n");
+			printf("*************signup Meun**************\r\n");
+			printf("*                                    *\r\n");
+			printf("*  ----user:***,password:******----  *\r\n");
+			printf("*                                    *\r\n");
+			printf("*   -------------exit-------------   *\r\n");
+			printf("*                                    *\r\n");
+			printf("**************************************\r\n");
 		}break;
-
-		
+		default:printf("\r\nerror commit!\r\n");
 	}
 }
+
+
+
+
+
+void printf_logsAll(uint8_t serialNum)
+{
+	
+	printf("password correctly!\r\n");
+	Printf_Loading(1000);
+	uint8_t i;
+	printf("***************************************\r\n");
+	printf("*          user name:%-8s         *\r\n", staffs_Database[serialNum].user_name);
+	printf("***************************************\r\n");
+	for(i=0; i<staffs_Database[serialNum].loginNum; i++)
+	{
+		printf("*         %02d:%02d:%02d %04d/%02d/%02d         *\r\n",\
+		 staffs_Database[serialNum].login_TimeSave[i].Hour, staffs_Database[serialNum].login_TimeSave[i].Min, staffs_Database[serialNum].login_TimeSave[i].Sec, \
+		staffs_Database[serialNum].login_TimeSave[i].Year, staffs_Database[serialNum].login_TimeSave[i].Month, staffs_Database[serialNum].login_TimeSave[i].Day );
+	}
+	printf("***************************************\r\n");
+}
+
+
+
 
 uint8_t KEY_Scan(void)
 {
@@ -137,9 +200,14 @@ uint8_t KEY_Scan(void)
 	}
 }
 
+
+
+
+
 void staffSignupNew()
 {
-	printf("\r\nwait for a second...\r\n\r\n");
+	printf("\r\nTyping into StaffDatabase!\r\n");
+	Printf_Loading(1000);
 	uint8_t i,j;
 	for(i=0; strbuf[i + strlen(cmd_StaffLogin)] != ','; i++)
 	{
@@ -148,7 +216,7 @@ void staffSignupNew()
 	staffs_Database[staffNum].user_name[i] = 0;
 
 
-	for(j=0; strbuf[j + strlen(cmd_StaffSignup)] != 0; j++)
+	for(j=0; strbuf[j + i + strlen(cmd_StaffSignup)] != 0; j++)
 	{
 		staffs_Database[staffNum].password[j] = strbuf[j + i + strlen(cmd_StaffSignup)];
 	}
@@ -175,7 +243,8 @@ void staffSignupNew()
 
 void staffLoginNew_intoDatabase(uint8_t serialNum)
 {
-	printf("\r\nwait for a second...\r\n\r\n");
+	printf("\r\nTyping into LogDatabase!\r\n");
+	Printf_Loading(200);
 	uint32_t TIM_NowCount = TIM_GetClock();
 	staffs_Database[serialNum].login_TimeSave[staffs_Database[serialNum].loginNum].Year=year ;
 	staffs_Database[serialNum].login_TimeSave[staffs_Database[serialNum].loginNum].Month=month ;
@@ -187,7 +256,7 @@ void staffLoginNew_intoDatabase(uint8_t serialNum)
 	staffs_Database[serialNum].loginNum++;
 	
 	uint8_t i=4;
-	while(--i)
+	while(i--)
 	{
 	LED0_Turn();
 	Delay_ms(500);
@@ -198,17 +267,78 @@ void staffLoginNew_intoDatabase(uint8_t serialNum)
 }
 
 
+
+
+
+
 void staff_NotFound()
 {
-	printf("\r\nwait for a second...\r\n");
+	Printf_Loading(200);
 	uint8_t i=10;
-	while(--i)
+	while(i--)
 	{
 	LED0_Turn();
 	Delay_ms(1000);
 	}
-	printf("\r\nerror:User Name Not Found!\r\n");
+	printf("error:User Name Not Found!\r\n");
 }
+
+
+
+
+
+void staff_searchName(uint8_t searchMode)
+{
+	Printf_Loading(200);
+	uint8_t i,j,k;
+	FlagStatus searchNameFlag;
+	unsigned char staffName[20];
+	for(i=0; strbuf[i+strlen(cmd_StaffLogin)] != 0 && strbuf[i+strlen(cmd_StaffLogin)] != ',';i++)
+	{
+		staffName[i] = strbuf[i+strlen(cmd_StaffLogin)];
+	}
+	staffName[i]=0;
+	
+	for(j=0; j<staffNum; j++)
+	{
+		if(strncmp(staffs_Database[j].user_name, staffName, strlen(staffName))==0)
+		{
+			searchNameFlag = SET;
+			memset(staffName,0,sizeof staffName);
+			if(searchMode ==searchMode_OnlyName )staffLoginNew_intoDatabase(j);
+			
+			else 
+			{
+				unsigned char staffPassword[20];
+				for(k=0; strbuf[k + i + strlen(cmd_StaffSignup)] != 0; k++)
+				{
+					staffPassword[k] = strbuf[k+i+strlen(cmd_StaffSignup)];
+				}
+					staffPassword[k] = 0;
+				if( strncmp(staffPassword, staffs_Database[j].password, strlen(staffs_Database[j].password)) == 0 )
+					printf_logsAll(j);
+				else
+					printf("Password Error!\r\n");
+			}
+		break;
+		}
+
+	}
+	if(searchNameFlag == RESET)
+	{
+		if(searchMode == searchMode_OnlyName) 
+			staff_NotFound();
+		else 
+			printf("error:User Name Not Found!\r\n");
+	}
+}
+
+
+
+
+
+
+
 
 int main(void)
 {
@@ -222,41 +352,20 @@ int main(void)
 	TimeSet();
 	while (1)
 	{
-		Print_MainMeun(1);
+		Printf_MainMeun(1);
 		switch(KEY_Scan())
 			{
 			case 0:
 			{
-				Print_MainMeun(2);
+				Printf_MainMeun(2);
 				while(1)
 				{
-					if(USART_GetString(strbuf)!=NULL)
+					if(USART_GetString(strbuf)!=NULL && strbuf[0] != 0)
 					{
 						if(strncmp(strbuf,cmd_StaffLogin,strlen(cmd_StaffLogin))==0)
 						{
-							uint8_t i;
-							FlagStatus staffSearchFlag;
-							unsigned char staffName[20];
-							
-							for(i=0; strbuf[i+strlen(cmd_StaffLogin)] != 0;i++)
-							{
-								staffName[i] = strbuf[i+strlen(cmd_StaffLogin)];
-							}
-							staffName[i]=0;
-							
-							for(i=0; i<staffNum; i++)
-							{
-								if(strncmp(staffs_Database[i].user_name, staffName, strlen(staffName))==0)
-								{
-									staffLoginNew_intoDatabase(i);
-									staffSearchFlag = SET;
-								}
-							}
-							
-							if(staffSearchFlag != SET)
-								staff_NotFound();
-								
-							
+							staff_searchName(searchMode_OnlyName);
+							Printf_MainMeun(2);
 						}
 						else if(strncmp(strbuf,cmd_Exit,strlen(cmd_Exit))==0)
 						{
@@ -265,7 +374,8 @@ int main(void)
 						}
 						else if(*strbuf != 0){
 							
-							Print_MainMeun(0);
+							Printf_MainMeun(0);
+							Printf_MainMeun(2);
 						}
 						memset(strbuf,0,sizeof strbuf);
 					}
@@ -274,20 +384,44 @@ int main(void)
 		
 			case 1:
 			{
-
+				Printf_MainMeun(3);
+				while(1)
+				{
+					if(USART_GetString(strbuf)!=NULL && strbuf[0] != 0)
+					{
+						if(strncmp(strbuf,cmd_StaffLogin,strlen(cmd_StaffLogin))==0)
+						{
+							staff_searchName(searchMode_PasswordCheck);
+							Printf_MainMeun(3);
+						}
+						else if(strncmp(strbuf, cmd_Exit, strlen(cmd_Exit))==0)
+						{
+							memset(strbuf,0,sizeof strbuf);
+							break;
+						}
+						else if(*strbuf != 0)
+						{
+							Printf_MainMeun(0);
+							Printf_MainMeun(3);
+						}
+						memset(strbuf,0,sizeof strbuf);
+					}
+				}
+				
 			}break;
 			
 			
 			case 2:
 			{
-								Print_MainMeun(3);
+					Printf_MainMeun(4);
 				while(1)
 				{
-					if(USART_GetString(strbuf)!=NULL)
+					if(USART_GetString(strbuf)!=NULL && strbuf[0] != 0)
 					{
 						if(strncmp(strbuf,cmd_StaffLogin,strlen(cmd_StaffLogin))==0)
 						{
-							staffSignupNew(strbuf);
+							staffSignupNew();
+							Printf_MainMeun(4);
 							
 						}
 						else if(strncmp(strbuf,cmd_Exit,strlen(cmd_Exit))==0)
@@ -296,7 +430,8 @@ int main(void)
 							break;
 						}
 						else if(*strbuf != 0){
-							Print_MainMeun(0);
+							Printf_MainMeun(0);
+							Printf_MainMeun(4);
 						}
 						
 						
@@ -304,6 +439,7 @@ int main(void)
 					}
 				}
 			}break;
+			default:printf("\r\nerror commit!\r\n");
 		}
 	
 	}
