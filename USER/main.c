@@ -1,3 +1,4 @@
+/************************头文件包含*************************/
 #include "stm32f10x.h" // Device header
 #include "Delay.h"
 #include "OLED.h"
@@ -6,40 +7,97 @@
 #include "Timer.h"
 #include "Serial.h"
 #include "string.h"
+/**********************************************************/
 
 
+
+
+
+
+/*******************************数据库查找模式枚举************************************/
 enum{
 	searchMode_OnlyName = 0,
 	searchMode_PasswordCheck
 }searchMode;
+/************************************************************************************/
 
 
+
+
+
+
+
+
+
+
+
+
+/*******************************数据库（结构体封装）********************************/
+//年登记日志信息：月日、时分秒
 struct loginTime{
+	
 	uint8_t Hour,Min,Sec;
+	
 	uint16_t Year,Month,Day;
 };
 
-
-
+//数据库：用户名、密码和登记日志信息
 struct staff{
+	
 	unsigned char user_name[20];
+	
 	unsigned char password[20];
+	
 	struct loginTime login_TimeSave[20];
+	
 	uint8_t loginNum;
+	
 }staffs_Database[50];
+/*********************************************************************************/
 
 
 
-uint8_t staffNum;
-char strbuf[50];
-uint16_t year,month,day;
+
+
+
+
+
+
+
+/*******************************全局变量************************************/
+char 		strbuf[50];			//串口接收缓存寄存器
+
+uint8_t 	staffNum;			//员工已注册数目
+
+uint16_t 	year, month, day;	//起始时间年月日
+/**************************************************************************/
+
+
+
+
+
+
+
+
+/*******************************串口指令定义************************************/
 static char cmd_SetTime[]="SETTIME";//设置时间的指令
+
 static char cmd_StaffLogin[]="user:";
+
 static char cmd_StaffSignup[]="user:,password:";
 
 static char cmd_Exit[]="exit";
+/*******************************************************************************/
 
 
+
+
+
+
+
+
+
+/*******************************模拟加载中串口输出函数*********************************/
 
 void Printf_Loading(uint16_t delay_time)
 {
@@ -56,21 +114,36 @@ void Printf_Loading(uint16_t delay_time)
 	printf(".\r\n\r\n");
 	
 }
+/************************************************************************************/
 
-//外设模块初始化
+
+
+
+
+
+
+
+
+/*******************************外设模块初始化************************************/
 void Project_InitAll()
 {
-	Timer_Init();
-	OLED_Init();
-	KEY_Init();
-	LED_Init();
-	Serial_Init();
+	Timer_Init();	//定时器
+	OLED_Init();	//OLED显示器
+	KEY_Init();		//按键
+	LED_Init();		//LED
+	Serial_Init();	//串口
 }
+/*********************************************************************************/
 
 
 
 
-//设备上电
+
+
+
+
+
+/**********************************************设备上电**************************************************/
 void DeviceStart(void)
 {
 	printf("请长按按键打开设备\r\n\r\n");
@@ -78,39 +151,61 @@ void DeviceStart(void)
 	Printf_Loading(200);
 	printf("设备打开成功，请用SETTIME命令设置当前系统时间,格式如下:\r\nSETTIME 19:30:21 2023/09/21\r\n\r\n");
 }
+/*******************************************************************************************************/
 
 
 
 
-//设置系统时间
+
+
+
+
+
+/*********************************************************************************设置系统初始时间*****************************************************************************************/
+
 void TimeSet(void)
 {
 	OLED_ShowString(1,1,"Current Time:");
 	OLED_ShowString(2,1,"  00:00:00  ");
+	
 	unsigned char Hour,Minute,Second;
+	
 	while(1)
     {
-	if(USART_GetString(strbuf)!=NULL)
-		{
-	    if(strncmp(strbuf,cmd_SetTime,strlen(cmd_SetTime))==0)
+		if(USART_GetString(strbuf)!=NULL)
 			{
-				Hour = (strbuf[strlen(cmd_SetTime)+1]-'0')*10 +(strbuf[strlen(cmd_SetTime)+2]-'0');
-				Minute = (strbuf[strlen(cmd_SetTime)+4]-'0')*10 +(strbuf[strlen(cmd_SetTime)+5]-'0');
-				Second = (strbuf[strlen(cmd_SetTime)+7]-'0')*10 +(strbuf[strlen(cmd_SetTime)+8]-'0');
-				year = (strbuf[strlen(cmd_SetTime)+10]-'0')*1000 +(strbuf[strlen(cmd_SetTime)+11]-'0')*100 + (strbuf[strlen(cmd_SetTime)+12]-'0')*10 + (strbuf[strlen(cmd_SetTime)+13]-'0');
-				month = (strbuf[strlen(cmd_SetTime)+15]-'0')*10 +(strbuf[strlen(cmd_SetTime)+16]-'0');
-				day = (strbuf[strlen(cmd_SetTime)+18]-'0')*10 +(strbuf[strlen(cmd_SetTime)+19]-'0');
-				printf("设置系统时间成功!当前时间为:\r\n%02d:%02d:%02d %04d/%02d/%02d\r\n\r\n",Hour,Minute,Second,year,month,day);
-				TIM_SetClock( (uint32_t) (Hour * 3600 + Minute * 60 + Second) );
-				memset(strbuf,0,sizeof strbuf);
-				break;
+				if(strncmp(strbuf,cmd_SetTime,strlen(cmd_SetTime))==0)
+					{
+						Hour = (strbuf[strlen(cmd_SetTime)+1]-'0')*10 +(strbuf[strlen(cmd_SetTime)+2]-'0');
+						Minute = (strbuf[strlen(cmd_SetTime)+4]-'0')*10 +(strbuf[strlen(cmd_SetTime)+5]-'0');
+						Second = (strbuf[strlen(cmd_SetTime)+7]-'0')*10 +(strbuf[strlen(cmd_SetTime)+8]-'0');
+						
+						
+						year = (strbuf[strlen(cmd_SetTime)+10]-'0')*1000 +(strbuf[strlen(cmd_SetTime)+11]-'0')*100 + (strbuf[strlen(cmd_SetTime)+12]-'0')*10 + (strbuf[strlen(cmd_SetTime)+13]-'0');
+						month = (strbuf[strlen(cmd_SetTime)+15]-'0')*10 +(strbuf[strlen(cmd_SetTime)+16]-'0');
+						day = (strbuf[strlen(cmd_SetTime)+18]-'0')*10 +(strbuf[strlen(cmd_SetTime)+19]-'0');
+						
+						printf("设置系统时间成功!当前时间为:\r\n%02d:%02d:%02d %04d/%02d/%02d\r\n\r\n",Hour,Minute,Second,year,month,day);
+						TIM_SetClock( (uint32_t) (Hour * 3600 + Minute * 60 + Second) );
+						
+						memset(strbuf,0,sizeof strbuf);
+						
+						break;
+					}
 			}
-		}
 		
 	}
 }
-	
+/*******************************************************************************************************************************************************************************************/
 
+
+
+
+
+
+
+
+/*******************************串口显示菜单输出************************************/
 
 void Printf_MainMeun(uint8_t MainMeun_Option)
 {
@@ -162,10 +257,19 @@ void Printf_MainMeun(uint8_t MainMeun_Option)
 	}
 }
 
+/***************************************************************************************/
 
 
 
 
+
+
+
+
+
+
+
+/*********************************************************************显示用户的所有登记日志***********************************************************************/
 void printf_logsAll(uint8_t serialNum)
 {
 	
@@ -184,9 +288,19 @@ void printf_logsAll(uint8_t serialNum)
 	printf("***************************************\r\n");
 }
 
+/*****************************************************************************************************************************************************************/
 
 
 
+
+
+
+
+
+
+
+
+/*******************************按键状态扫描函数************************************/
 uint8_t KEY_Scan(void)
 {
 	while(1)
@@ -200,8 +314,19 @@ uint8_t KEY_Scan(void)
 	}
 }
 
+/**********************************************************************************/
 
 
+
+
+
+
+
+
+
+
+
+/************************************************新用户信息录入函数***********************************************/
 
 
 void staffSignupNew()
@@ -238,9 +363,21 @@ void staffSignupNew()
 	TIM_NowCount / 3600,(TIM_NowCount % 3600) / 60,(TIM_NowCount % 3600) % 60,year,month,day);
 }
 
+/****************************************************************************************************************/
 
 
 
+
+
+
+
+
+
+
+
+
+
+/*********************************************用户打卡录入日志库**************************************************/
 void staffLoginNew_intoDatabase(uint8_t serialNum)
 {
 	printf("\r\nTyping into LogDatabase!\r\n");
@@ -265,12 +402,20 @@ void staffLoginNew_intoDatabase(uint8_t serialNum)
 	printf("%s:%02d:%02d:%02d %04d/%02d/%02d\r\n\r\n",staffs_Database[serialNum].user_name,\
 	TIM_NowCount / 3600,(TIM_NowCount % 3600) / 60,(TIM_NowCount % 3600) % 60,year,month,day);
 }
+/******************************************************************************************************************/
 
 
 
 
 
 
+
+
+
+
+
+
+/*******************************用户名未找到输出提示************************************/
 void staff_NotFound()
 {
 	Printf_Loading(200);
@@ -282,11 +427,20 @@ void staff_NotFound()
 	}
 	printf("error:User Name Not Found!\r\n");
 }
+/************************************************************************************/
 
 
 
 
 
+
+
+
+
+
+
+
+/*************************************************按键初始化函数***************************************************/
 void staff_searchName(uint8_t searchMode)
 {
 	Printf_Loading(200);
@@ -332,24 +486,32 @@ void staff_searchName(uint8_t searchMode)
 			printf("error:User Name Not Found!\r\n");
 	}
 }
+/**********************************************************************************************************************/
 
 
 
 
 
 
+
+
+
+
+
+/*******************************按键初始化函数************************************/
 
 
 int main(void)
 {
-	//设置中断分组
+
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
-	//初始化(自定义)
+
 	Project_InitAll();
-	//设备启动(自定义)
+
 	DeviceStart();
-	//系统时间设置(自定义)
+
 	TimeSet();
+	
 	while (1)
 	{
 		Printf_MainMeun(1);
@@ -444,4 +606,4 @@ int main(void)
 	
 	}
 }
-
+/************************************************************************************/
