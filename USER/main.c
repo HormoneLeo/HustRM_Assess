@@ -35,7 +35,7 @@ void TimeSet(void)
 		year = (strbuf[strlen(cmd_SetTime)+10]-'0')*1000 +(strbuf[strlen(cmd_SetTime)+11]-'0')*100 + (strbuf[strlen(cmd_SetTime)+12]-'0')*10 + (strbuf[strlen(cmd_SetTime)+13]-'0');
 		month = (strbuf[strlen(cmd_SetTime)+15]-'0')*10 +(strbuf[strlen(cmd_SetTime)+16]-'0');
 		day = (strbuf[strlen(cmd_SetTime)+18]-'0')*10 +(strbuf[strlen(cmd_SetTime)+19]-'0');
-		printf("设置系统时间成功!当前时间为:\r\n%d:%d:%d %d/%d/%d\r\n\r\n",Hour,Minute,Second,year,month,day);
+		printf("设置系统时间成功!当前时间为:\r\n%02d:%02d:%02d %04d/%02d/%02d\r\n\r\n",Hour,Minute,Second,year,month,day);
 		TIM_SetClock( (uint32_t) (Hour * 3600 + Minute * 60 + Second) );
 		break;
 	    }
