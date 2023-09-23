@@ -59,9 +59,10 @@ void KEY_Init(void)
 
 
 
-/*******************************按键初始化函数************************************/
-
-//按键值结构体复位函数
+/*******************************按键值结构体复位函数*******************************/
+/*实现功能
+复位按键状态
+*/
 void keyValueReset(void)
 {
 	myKey_Value.shortPressed = RESET;
@@ -83,7 +84,7 @@ void keyValueReset(void)
 
 
 /*******************************外部中断处理函数************************************/
-/*实现功能
+/*实现功能：
 按键按下则触发一次中断
 */
 void EXTI1_IRQHandler(void)
@@ -109,8 +110,6 @@ void EXTI1_IRQHandler(void)
 1、1KHz采样捕捉按键状态
 2、配合系统时钟计数器完成1s计时
 */
-
-//TIM2触发频率为1KHz,也就是每1ms对按键状态采样一次
 void TIM2_IRQHandler(void)
 {
 	if(TIM_GetITStatus(TIM2, TIM_IT_Update) == SET)		//读取中断标志位
@@ -201,7 +200,7 @@ uint32_t TIM_GetClock(void)
 
 /*******************************实时时钟计数器起始时间设置函数************************************/
 /*实现功能
-从main函数传入，用于设置实时时钟的起始时间
+从main函数传入参数，用于设置实时时钟的起始时间
 */
 void TIM_SetClock(uint32_t TIM_ClockStartPoint)
 {
