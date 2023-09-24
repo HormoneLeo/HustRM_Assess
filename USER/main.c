@@ -16,8 +16,9 @@
 
 /*******************************数据库查找模式枚举************************************/
 enum{
-	searchMode_OnlyName = 0,
-	searchMode_PasswordCheck
+	searchMode_login_OnlyName = 0,
+	searchMode_signup_OnlyName,
+	searchMode_lookup_PasswordCheck
 }searchMode;
 /************************************************************************************/
 
@@ -192,10 +193,10 @@ void Project_InitAll()
 /**********************************************设备上电**************************************************/
 void DeviceStart(void)
 {
-	printf("请长按按键打开设备\r\n\r\n");
+	printf("请长按按键打开设备\r\n");
 	while(myKey_Value.longPressed == RESET);
 	Printf_Loading(200);
-	printf("设备打开成功，请用SETTIME命令设置当前系统时间,格式如下:\r\nSETTIME 19:30:21 2023/09/21\r\n\r\n");
+	printf("设备打开成功，请用SETTIME命令设置当前系统时间,格式如下:\r\n\r\nSETTIME 19:30:21 2023/09/21\r\n\r\n");
 }
 /*******************************************************************************************************/
 
@@ -226,7 +227,7 @@ void TimeSet(void)
 						month = (strbuf[strlen(cmd_SetTime)+15]-'0')*10 +(strbuf[strlen(cmd_SetTime)+16]-'0');
 						day = (strbuf[strlen(cmd_SetTime)+18]-'0')*10 +(strbuf[strlen(cmd_SetTime)+19]-'0');
 						
-						printf("设置系统时间成功!当前时间为:\r\n%02d:%02d:%02d %04d/%02d/%02d\r\n\r\n",Hour,Minute,Second,year,month,day);
+						printf("设置系统时间成功!当前时间为:\r\n\r\n%02d:%02d:%02d %04d/%02d/%02d\r\n",Hour,Minute,Second,year,month,day);
 						TIM_SetClock( (uint32_t) (Hour * 3600 + Minute * 60 + Second) );
 						
 						memset(strbuf,0,sizeof strbuf);
@@ -295,7 +296,7 @@ void Enter_loginMeun(void)
 		{
 			if(strncmp(strbuf,cmd_StaffLogin,strlen(cmd_StaffLogin))==0)
 			{
-				staff_searchName(searchMode_OnlyName);
+				staff_searchName(searchMode_login_OnlyName);
 				Printf_MainMeun(2);
 			}
 			else if(strncmp(strbuf,cmd_Exit,strlen(cmd_Exit))==0)
@@ -331,7 +332,7 @@ void Enter_lookupMeun(void)
 		{
 			if(strncmp(strbuf,cmd_StaffLogin,strlen(cmd_StaffLogin))==0)
 			{
-				staff_searchName(searchMode_PasswordCheck);
+				staff_searchName(searchMode_lookup_PasswordCheck);
 				Printf_MainMeun(3);
 			}
 			else if(strncmp(strbuf, cmd_Exit, strlen(cmd_Exit))==0)
@@ -367,7 +368,7 @@ void Enter_signupMeun(void)
 			{
 				if(strncmp(strbuf,cmd_StaffLogin,strlen(cmd_StaffLogin))==0)
 				{
-					staffSignupNew();
+					staff_searchName(searchMode_signup_OnlyName);
 					Printf_MainMeun(4);
 					
 				}
@@ -409,7 +410,7 @@ void Enter_signupMeun(void)
 
 void staffSignupNew()
 {
-	printf("\r\nTyping into StaffDatabase!\r\n");
+	printf("Typing into StaffDatabase!\r\n");
 	Printf_Loading(1000);
 	uint8_t i,j;
 	for(i=0; strbuf[i + strlen(cmd_StaffLogin)] != ','; i++)
@@ -436,8 +437,8 @@ void staffSignupNew()
 	
 	staffs_Database[staffNum].loginNum++;
 	
-	printf("signup successfully!\r\n");
-	printf("%s:%02d:%02d:%02d %04d/%02d/%02d\r\n\r\n",staffs_Database[staffNum++].user_name,\
+	printf("signup successfully!\r\n\r\n");
+	printf("%s:%02d:%02d:%02d %04d/%02d/%02d\r\n",staffs_Database[staffNum++].user_name,\
 	TIM_NowCount / 3600,(TIM_NowCount % 3600) / 60,(TIM_NowCount % 3600) % 60,year,month,day);
 }
 
@@ -465,8 +466,11 @@ void staff_searchName(uint8_t searchMode)
 		{
 			searchNameFlag = SET;
 			memset(staffName,0,sizeof staffName);
-			if(searchMode ==searchMode_OnlyName )staffLoginNew_intoDatabase(j);
-			
+			if(searchMode ==searchMode_login_OnlyName )
+				staffLoginNew_intoDatabase(j);
+			else if(searchMode == searchMode_signup_OnlyName)
+				printf("The User name Have been Signed Up!\r\n");
+				
 			else 
 			{
 				unsigned char staffPassword[20];
@@ -486,8 +490,10 @@ void staff_searchName(uint8_t searchMode)
 	}
 	if(searchNameFlag == RESET)
 	{
-		if(searchMode == searchMode_OnlyName) 
+		if(searchMode == searchMode_login_OnlyName) 
 			Printf_StaffNotFound();
+		else if(searchMode == searchMode_signup_OnlyName)
+			staffSignupNew();
 		else 
 			printf("error:User Name Not Found!\r\n");
 	}
@@ -500,7 +506,7 @@ void staff_searchName(uint8_t searchMode)
 /*********************************************用户打卡录入日志库**************************************************/
 void staffLoginNew_intoDatabase(uint8_t serialNum)
 {
-	printf("\r\nTyping into LogDatabase!\r\n");
+	printf("Typing into LogDatabase!\r\n");
 	Printf_Loading(200);
 	uint32_t TIM_NowCount = TIM_GetClock();
 	staffs_Database[serialNum].login_TimeSave[staffs_Database[serialNum].loginNum].Year=year ;
@@ -518,8 +524,8 @@ void staffLoginNew_intoDatabase(uint8_t serialNum)
 	LED0_Turn();
 	Delay_ms(500);
 	}
-	printf("login successfully!\r\n");
-	printf("%s:%02d:%02d:%02d %04d/%02d/%02d\r\n\r\n",staffs_Database[serialNum].user_name,\
+	printf("login successfully!\r\n\r\n");
+	printf("%s:%02d:%02d:%02d %04d/%02d/%02d\r\n",staffs_Database[serialNum].user_name,\
 	TIM_NowCount / 3600,(TIM_NowCount % 3600) / 60,(TIM_NowCount % 3600) % 60,year,month,day);
 }
 /******************************************************************************************************************/

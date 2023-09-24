@@ -749,6 +749,11 @@
               <FileType>5</FileType>
               <FilePath>.\USER\stm32f10x_it.h</FilePath>
             </File>
+            <File>
+              <FileName>testt_cmd.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\testt_cmd.txt</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
