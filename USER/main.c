@@ -610,7 +610,6 @@ void Printf_Loading(uint16_t delay_time)
 
 
 /*******************************串口显示菜单输出************************************/
-
 void Printf_MainMeun(uint8_t MainMeun_Option)
 {
 	Printf_Loading(500);
@@ -660,7 +659,6 @@ void Printf_MainMeun(uint8_t MainMeun_Option)
 		default:printf("\r\nerror commit!\r\n");
 	}
 }
-
 /***************************************************************************************/
 
 
